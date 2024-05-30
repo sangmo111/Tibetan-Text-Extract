@@ -1,29 +1,38 @@
 import cv2
 import pytesseract
 
-# Function to preprocess frame
+# Function to preprocess frame for OCR
 def preprocess_frame(frame):
     # Convert frame to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
-    # Increase contrast using histogram equalization
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    enhanced_gray = clahe.apply(gray)
+    # Apply Gaussian blur to reduce noise
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     
-    return enhanced_gray
+    # Use adaptive thresholding to handle different lighting conditions
+    thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    
+    return thresh
 
-# Function to extract subtitles
+# Function to extract subtitles ROI
 def extract_subtitles(frame):
     # Define ROI for subtitles (bottom center)
-    roi_y = int(0.8 * frame.shape[0])  # Adjust as needed
+    roi_y = int(0.7 * frame.shape[0])  # Adjust as needed
     roi_x = int(0.1 * frame.shape[1])  # Adjust as needed
     roi_height = int(0.2 * frame.shape[0])  # Adjust as needed
-    roi_width = int(0.8 * frame.shape[1])  # Adjust as needed
+    roi_width = int(0.6 * frame.shape[1])  # Adjust as needed
     
     # Extract ROI
     roi = frame[roi_y:roi_y+roi_height, roi_x:roi_x+roi_width]
     
     return roi
+
+# Function to perform OCR with Tesseract
+def perform_ocr(image):
+    # Define Tesseract configuration
+    config = '--oem 3 --psm 6'  # LSTM OCR Engine, Assume a single uniform block of text
+    result = pytesseract.image_to_string(image, config=config, lang='bod')
+    return result
 
 # Open the video file
 video_path = "/Users/jinpa/Downloads/Nyingtam_final_jinpa_jungney.mov"  # Update with the path to your video file
@@ -57,7 +66,7 @@ for timestamp in timestamps:
     subtitles_roi = extract_subtitles(processed_frame)
     
     # Perform OCR on subtitles ROI
-    ocr_result = pytesseract.image_to_string(subtitles_roi, lang='bod')
+    ocr_result = perform_ocr(subtitles_roi)
     
     # Print OCR result
     print("Timestamp:", timestamp, "OCR Result:", ocr_result)
