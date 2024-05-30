@@ -16,9 +16,9 @@ def preprocess_frame(frame):
 def extract_subtitles(frame):
     # Define ROI for subtitles (bottom center)
     roi_y = int(0.8 * frame.shape[0])  # Adjust as needed
-    roi_x = int(0.1 * frame.shape[1])  # Adjust as needed -300 
-    roi_height = int(0.2 * frame.shape[0])  # Adjust as needed 40 
-    roi_width = int(0.8 * frame.shape[1])  # Adjust as needed 500
+    roi_x = int(0.1 * frame.shape[1])  # Adjust as needed
+    roi_height = int(0.2 * frame.shape[0])  # Adjust as needed
+    roi_width = int(0.8 * frame.shape[1])  # Adjust as needed
     
     # Extract ROI
     roi = frame[roi_y:roi_y+roi_height, roi_x:roi_x+roi_width]
@@ -61,6 +61,14 @@ for timestamp in timestamps:
     
     # Print OCR result
     print("Timestamp:", timestamp, "OCR Result:", ocr_result)
+    
+    # Display the frame with subtitles ROI
+    cv2.imshow('Frame at Timestamp {}'.format(timestamp), frame)
+    cv2.imshow('Subtitles ROI at Timestamp {}'.format(timestamp), subtitles_roi)
+    
+    # Wait for a key press to close the image window and proceed
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 # Release the video capture
 video.release()
